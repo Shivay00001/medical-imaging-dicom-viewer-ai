@@ -1,14 +1,13 @@
-from fastapi import FastAPI
-import numpy as np
+#!/usr/bin/env python3
+"""Top-level entry point — runs the REAL DICOM viewer API (src/main.py).
 
-app = FastAPI()
+The previous top-level main.py was an unrelated random-/predict stub; it has
+been replaced with this thin launcher for the real flow:
+    DICOM upload -> pydicom parsing -> U-Net segmentation -> /analyze, /health
+"""
+import uvicorn
 
-@app.get("/")
-def health_check():
-    return {"status": "operational", "model_version": "v2.4.1"}
+from src.main import app
 
-@app.post("/predict")
-def predict(data: dict):
-    # Simulated Inference
-    vector = np.random.rand(128)
-    return {"class_id": int(np.argmax(vector)), "confidence": float(np.max(vector))}
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)

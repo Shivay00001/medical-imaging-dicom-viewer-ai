@@ -198,3 +198,24 @@ This project is licensed under the **VisionQuantech Custom Commercial License** 
 - **Business/enterprise use requires a separate commercial license** — contact **visionquantech@proton.me**.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
+---
+
+## 🔧 Wave-1 fix notes (2026-09-24)
+
+- **Replaced the stub `main.py`.** The top-level `main.py` was an unrelated random
+  `/predict` stub; it is now a thin launcher for the real flow
+  (`src/main.py` → `DICOMHandler` → UNet → `/analyze`, `/health`).
+- **Dropped the fake AI claim.** `/analyze` no longer returns the hardcoded
+  `"AI analysis completed (mock)"` string. It now runs a **real UNet forward pass**
+  (torch) on the extracted pixels and returns real mask statistics
+  (`mask_mean`, `mask_max`, `anomaly_score`) — honestly labeled as experimental
+  output from **untrained** weights (set `SEGMENTATION_MODEL_PATH` to load trained
+  weights). If torch isn't installed, the endpoint reports segmentation as
+  unavailable instead of faking it. torch import is optional/guarded.
+- Verified 2026-09-24: `pytest tests/ -q` → **4 passed** on a real synthetic DICOM
+  (`tests/sample.dcm`, regenerable via `tests/make_sample.py`): metadata parsing,
+  pixel normalization, and end-to-end `/analyze` with real inference. Also booted
+  via top-level `main.py` and hit `/health` + `/analyze` over HTTP successfully.
+- Requirements: `pydicom`, `torch` (CPU ok), `fastapi`, `uvicorn`, `numpy`, `Pillow`,
+  `python-multipart`, `pytest`, `httpx` (see `requirements.txt`).
+- ⚠️ Medical disclaimer: this is a demo/research scaffold, not a diagnostic device.
